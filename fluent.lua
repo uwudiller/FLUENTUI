@@ -1162,7 +1162,6 @@ function SectionMethods:AddDropdown(config)
 				comp.Selected  = v
 				valLabel.Text  = tostring(v)
 				pcall(cb, v)
-				comp.Close()
 			end)
 
 			table.insert(listItems, item)
