@@ -1,12 +1,12 @@
 --[[
-	Fluent UI - Example Usage
-	==========================
+	Fluent UI v2.0 - Liquid Glass Edition
+	=======================================
 	This file demonstrates how to use the Fluent UI library.
 	
 	To use:
 	1. Load the library via loadstring
 	2. Create a window
-	3. Add tabs, sections, and components
+	3. Add tabs with icons, sections, and components
 	
 	Run this in a Roblox executor with the library loaded.
 --]]
@@ -15,7 +15,7 @@
 -- local Fluent = loadstring(game:HttpGet("https://raw.githubusercontent.com/your-repo/fluent/main/fluent.lua"))()
 
 -- For local testing (if you have the file in workspace):
-local Fluent = loadstring(game:HttpGet("https://raw.githubusercontent.com/uwudiller/FLUENTUI/refs/heads/main/fluent.lua"))()
+local Fluent = loadstring(game:HttpGet("https://raw.githubusercontent.com/your-repo/fluent/main/fluent.lua"))()
 
 -- If you want to host it locally, you can also do:
 -- local Fluent = loadstring(game:GetObjects("rbxassetid://YOUR_ASSET_ID")[1].Source)()
@@ -23,28 +23,31 @@ local Fluent = loadstring(game:HttpGet("https://raw.githubusercontent.com/uwudil
 
 -- Create the main window
 local Window = Fluent:CreateWindow({
-	Title = "My Executor v1.0",
-	Size = UDim2.new(0, 680, 0, 500),
-	Position = UDim2.new(0.5, -340, 0.5, -250),
+	Title = "My Executor v2.0",
+	Size = UDim2.new(0, 700, 0, 520),
+	Position = UDim2.new(0.5, -350, 0.5, -260),
 	Keybind = Enum.KeyCode.RightShift, -- Optional: keybind to toggle visibility
 })
 
 -- ============================================
 -- TAB 1: HOME / GETTING STARTED
 -- ============================================
-local HomeTab = Window:AddTab("Home")
+-- NEW: Icons are now supported! Use icon names from the icon system
+local HomeTab = Window:AddTab("Home", "home")
 
 -- Documentation / welcome paragraph
-HomeTab:AddParagraph("Welcome to Fluent UI", 
-	"This is a modern, Fluent Design-inspired UI library for Roblox executors. " ..
-	"It features a clean, dark-themed interface with smooth animations and responsive controls.\n\n" ..
+HomeTab:AddParagraph("Welcome to Fluent UI v2.0", 
+	"This is a modern, Apple-inspired glassmorphism UI library for Roblox executors. " ..
+	"It features a clean, liquid glass design with spring animations and responsive controls.\n\n" ..
 	"<b>Key Features:</b>\n" ..
-	"• Fluent Design aesthetics with custom rendering\n" ..
+	"• Liquid glass/glassmorphism design with blur effects\n" ..
+	"• Material Design icon support for tabs and components\n" ..
+	"• Spring physics animations for smooth interactions\n" ..
+	"• Enhanced dropdowns with search functionality\n" ..
 	"• Fully draggable windows with minimize/maximize\n" ..
-	"• Tab navigation system with animated indicators\n" ..
+	"• Tab navigation with animated indicators\n" ..
 	"• Buttons, Toggles, Sliders, Dropdowns, Keybinds & more\n" ..
-	"• Notification system with slide-in animations\n" ..
-	"• All components are fully customizable"
+	"• Notification system with slide-in animations"
 )
 
 -- Separator
@@ -74,7 +77,8 @@ end, "Run the currently selected script")
 -- ============================================
 -- TAB 2: SETTINGS
 -- ============================================
-local SettingsTab = Window:AddTab("Settings")
+-- NEW: Add icon to tab
+local SettingsTab = Window:AddTab("Settings", "settings")
 
 -- Visual settings section
 local VisualSection = SettingsTab:AddSection("Visual Settings")
@@ -151,7 +155,8 @@ local OpacitySlider = SliderSection:AddSlider({
 -- ============================================
 -- TAB 3: SCRIPTS
 -- ============================================
-local ScriptsTab = Window:AddTab("Scripts")
+-- NEW: Add icon to tab
+local ScriptsTab = Window:AddTab("Scripts", "folder")
 
 -- Script management section
 local ScriptSection = ScriptsTab:AddSection("Script Library")
@@ -211,7 +216,8 @@ end, "Run your custom Lua script")
 -- ============================================
 -- TAB 4: DROPDOWN & SELECTION
 -- ============================================
-local SelectionTab = Window:AddTab("Selection")
+-- NEW: Add icon to tab
+local SelectionTab = Window:AddTab("Selection", "search")
 
 -- Dropdown section
 local DropdownSection = SelectionTab:AddSection("Selection Options")
@@ -226,10 +232,12 @@ local ExecutionMode = DropdownSection:AddDropdown({
 	end
 })
 
+-- NEW: Icon support in dropdowns
 local ThemeDropdown = DropdownSection:AddDropdown({
 	Title = "Theme Selection",
 	Description = "Choose UI color scheme",
-	Values = {"Dark (Default)", "Amethyst", "Emerald", "Ruby", "Sapphire"},
+	Icon = "palette",
+	Values = {"Dark (Default)", "Amethyst", "Emerald", "Ruby", "Sapphire", "Rose", "Amber", "Teal"},
 	Default = "Dark (Default)",
 	Callback = function(value)
 		print("Theme:", value)
@@ -251,10 +259,33 @@ local TargetDropdown = DropdownSection:AddDropdown({
 	end
 })
 
+-- NEW: Large dropdown with search functionality (shows search box when >5 items)
+local LargeDropdown = DropdownSection:AddDropdown({
+	Title = "Script Library",
+	Description = "Search through available scripts (try typing!)",
+	Icon = "folder",
+	Values = {
+		"Infinite Yield", "Dex Explorer", "Remote Spy", "Simple Spy", 
+		"Cmd-X", "Hydroxide", "Trigon", "Synapse X", "Script-Ware",
+		"Krnl", "Oxygen U", "Sirius", "Temple", "Venom X",
+		"Shadow", "Electron", "Krypton", "Calamari", "Seven"
+	},
+	Default = "Infinite Yield",
+	Callback = function(value)
+		print("Selected script:", value)
+		Fluent:Notify({
+			Title = "Script Selected",
+			Content = "Selected: " .. value,
+			Duration = 2
+		})
+	end
+})
+
 -- ============================================
 -- TAB 5: KEYBINDS
 -- ============================================
-local KeybindsTab = Window:AddTab("Keybinds")
+-- NEW: Add icon to tab
+local KeybindsTab = Window:AddTab("Keybinds", "keyboard")
 
 -- Keybind section
 local KeybindSection = KeybindsTab:AddSection("Keybind Configuration")
@@ -297,24 +328,37 @@ KeybindSection:AddLabel("Keybind Instructions",
 -- ============================================
 -- TAB 6: ABOUT / INFO
 -- ============================================
-local AboutTab = Window:AddTab("About")
+-- NEW: Add icon to tab
+local AboutTab = Window:AddTab("About", "info")
 
 -- About section
-AboutTab:AddParagraph("Fluent UI v1.0.0", 
-	"<b>Fluent UI</b> is a modern, fully custom user interface library designed specifically for Roblox executors.\n\n" ..
-	"Built with Fluent Design principles, it provides a clean, professional look with smooth " ..
-	"animations and a responsive layout that adapts to any screen size."
+AboutTab:AddParagraph("Fluent UI v2.0 - Liquid Glass Edition", 
+	"<b>Fluent UI v2.0</b> is a modern, Apple-inspired glassmorphism UI library designed specifically for Roblox executors.\n\n" ..
+	"Built with liquid glass design principles, it provides a clean, professional look with spring " ..
+	"physics animations and a responsive layout that adapts to any screen size."
+)
+
+AboutTab:AddSeparator()
+
+AboutTab:AddParagraph("New in v2.0", 
+	"<b>What's New:</b>\n\n" ..
+	"• <b>Liquid Glass Design</b> - Glassmorphism effects with blur and transparency\n" ..
+	"• <b>Icon System</b> - Material Design icons for tabs and components\n" ..
+	"• <b>Spring Animations</b> - Physics-based bouncy animations\n" ..
+	"• <b>Enhanced Dropdowns</b> - Search functionality for large lists\n" ..
+	"• <b>Micro-interactions</b> - Improved hover effects and click feedback\n" ..
+	"• <b>Modern Theme</b> - Updated color palette with glass aesthetics"
 )
 
 AboutTab:AddSeparator()
 
 AboutTab:AddParagraph("Component Reference", 
 	"<b>Available Components:</b>\n\n" ..
-	"• <b>Button</b> - Standard action button\n" ..
+	"• <b>Button</b> - Standard action button with spring animations\n" ..
 	"• <b>AccentButton</b> - Filled accent-colored button\n" ..
-	"• <b>Toggle</b> - On/off switch with smooth animation\n" ..
-	"• <b>Slider</b> - Draggable value selector\n" ..
-	"• <b>Dropdown</b> - Expandable option selector\n" ..
+	"• <b>Toggle</b> - On/off switch with spring animation\n" ..
+	"• <b>Slider</b> - Draggable value selector with hover effects\n" ..
+	"• <b>Dropdown</b> - Expandable option selector with search & icons\n" ..
 	"• <b>Keybind</b> - Rebindable key input\n" ..
 	"• <b>Textbox</b> - Text input field (single/multi-line)\n" ..
 	"• <b>Label</b> - Static text display\n" ..
@@ -327,7 +371,7 @@ AboutTab:AddSeparator()
 
 AboutTab:AddParagraph("API Documentation",
 	"<b>Window Methods:</b>\n" ..
-	"• <b>Window:AddTab(title, icon?)</b> - Create a new tab\n" ..
+	"• <b>Window:AddTab(title, icon?)</b> - Create a new tab with optional icon\n" ..
 	"• <b>Window:SelectTab(name/index)</b> - Switch to a tab\n" ..
 	"• <b>Window:SetMinimized(bool)</b> - Minimize/restore\n" ..
 	"• <b>Window:ToggleVisibility()</b> - Show/hide window\n" ..
@@ -349,7 +393,7 @@ AboutTab:AddParagraph("API Documentation",
 	"• <b>Section:AddAccentButton(text, callback, desc?)</b> - Add accent button\n" ..
 	"• <b>Section:AddToggle(config)</b> - Add a toggle switch\n" ..
 	"• <b>Section:AddSlider(config)</b> - Add a slider\n" ..
-	"• <b>Section:AddDropdown(config)</b> - Add a dropdown\n" ..
+	"• <b>Section:AddDropdown(config)</b> - Add a dropdown (supports Icon parameter)\n" ..
 	"• <b>Section:AddKeybind(config)</b> - Add a keybind\n" ..
 	"• <b>Section:AddTextbox(config)</b> - Add a text input\n" ..
 	"• <b>Section:AddLabel(text, desc?)</b> - Add a label\n" ..
@@ -357,7 +401,14 @@ AboutTab:AddParagraph("API Documentation",
 	"• <b>Section:AddSeparator()</b> - Add a divider\n\n" ..
 	
 	"<b>Notification:</b>\n" ..
-	"• <b>Fluent:Notify({Title, Content, Duration})</b> - Show notification"
+	"• <b>Fluent:Notify({Title, Content, Duration})</b> - Show notification\n\n" ..
+	
+	"<b>Available Icons:</b>\n" ..
+	"• home, dashboard, settings, search, folder, file, play, pause, stop\n" ..
+	"• add, remove, delete, edit, save, copy, paste, refresh\n" ..
+	"• share, favorite, thumb_up, thumb_down, chat, email, phone\n" ..
+	"• lock, unlock, visibility, info, warning, error, success\n" ..
+	"• And many more - check the Icons table in fluent.lua"
 )
 
 -- ============================================
@@ -367,8 +418,8 @@ AboutTab:AddParagraph("API Documentation",
 -- Show a welcome notification after a short delay
 task.delay(0.5, function()
 	Fluent:Notify({
-		Title = "Welcome to Fluent UI",
-		Content = "The UI has loaded successfully. Try out the different components!",
+		Title = "Welcome to Fluent UI v2.0",
+		Content = "The UI has loaded successfully! Try the new glassmorphism design, icons, and spring animations.",
 		Duration = 4
 	})
 end)
@@ -421,5 +472,6 @@ end)
 --]]
 
 -- Print that the example has loaded
-print("Fluent UI Example has loaded successfully!")
+print("Fluent UI v2.0 Example has loaded successfully!")
 print("Press RightShift to toggle the UI visibility.")
+print("Try the new features: icons in tabs, search in dropdowns, and spring animations!")
