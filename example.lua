@@ -15,7 +15,7 @@
 -- local Fluent = loadstring(game:HttpGet("https://raw.githubusercontent.com/your-repo/fluent/main/fluent.lua"))()
 
 -- For local testing (if you have the file in workspace):
-local Fluent = loadstring(game:HttpGet("https://raw.githubusercontent.com/your-repo/fluent/main/fluent.lua"))()
+local Fluent = loadstring(game:HttpGet("https://raw.githubusercontent.com/uwudiller/FLUENTUI/refs/heads/main/fluent.lua"))()
 
 -- If you want to host it locally, you can also do:
 -- local Fluent = loadstring(game:GetObjects("rbxassetid://YOUR_ASSET_ID")[1].Source)()
