@@ -1,24 +1,14 @@
 --[[
-	Fluent UI v1.0.1 (Fixed)
-	A modern Fluent Design-inspired UI library for Roblox executors.
+	Fluent UI v2.0 - Liquid Glass Edition
+	A modern, Apple-inspired glassmorphism UI library for Roblox executors.
 
-	Fixes applied:
-	  1. TabMethods and SectionMethods forward-declared so they exist when
-	     Window:AddTab and TabMethods:AddSection reference them via setmetatable.
-	  2. Dropdown: renamed comp.Open/comp.Close boolean+function collision to
-	     comp._open (bool) + comp:Open() / comp:Close() methods, and fixed the
-	     guard checks inside those methods.
-	  3. RebuildItems: no longer overwrites comp.Selected with Values[1] when a
-	     Default was already set; only falls back when nothing is selected.
-	  4. ScreenGui is now parented to Players.LocalPlayer.PlayerGui (falls back to
-	     CoreGui for executor environments that support it).
-	  5. Slider click handler: MouseButton1Click on a TextButton does not supply a
-	     position argument — replaced with InputBegan for the initial click so the
-	     position is always available.
-	  6. Slider UpdatePosition is now always called on init so the fill/thumb
-	     reflect the default value even when it is 0.
-	  7. Minor: UIListLayout AbsoluteContentSize signal in AddSection now correctly
-	     sizes the page canvas.
+	Features:
+	  • Liquid glass/glassmorphism design with blur effects
+	  • Material Design icon support (UTF-8)
+	  • Enhanced animations with spring physics
+	  • Improved dropdowns with search and icons
+	  • Smooth micro-interactions and hover effects
+	  • Modern color palette with transparency
 --]]
 
 -- Services
@@ -29,7 +19,7 @@ local Players         = game:GetService("Players")
 -- The library table
 local Fluent = {}
 Fluent.__index = Fluent
-Fluent.Version = "1.0.1"
+Fluent.Version = "2.0"
 
 local ActiveWindows = {}
 
@@ -40,39 +30,118 @@ local TabMethods     = {}
 local SectionMethods = {}
 
 -- ============================================
--- THEME
+-- ICON SYSTEM (Material Design UTF-8)
+-- ============================================
+
+local Icons = {
+	-- Navigation
+	home = "🏠",
+	dashboard = "📊",
+	settings = "⚙️",
+	menu = "☰",
+	arrow_back = "←",
+	arrow_forward = "→",
+	arrow_up = "↑",
+	arrow_down = "↓",
+	expand_more = "▼",
+	expand_less = "▲",
+	
+	-- Actions
+	search = "🔍",
+	add = "➕",
+	remove = "➖",
+	delete = "🗑️",
+	edit = "✏️",
+	save = "💾",
+	copy = "📋",
+	paste = "📄",
+	refresh = "🔄",
+	play = "▶️",
+	pause = "⏸️",
+	stop = "⏹️",
+	
+	-- Social
+	share = "🔗",
+	favorite = "⭐",
+	thumb_up = "👍",
+	thumb_down = "👎",
+	
+	-- Content
+	text = "📝",
+	image = "🖼️",
+	video = "🎬",
+	music = "🎵",
+	attachment = "📎",
+	link = "🔗",
+	
+	-- Communication
+	chat = "💬",
+	email = "✉️",
+	phone = "📞",
+	notifications = "🔔",
+	
+	-- Files
+	folder = "📁",
+	file = "📄",
+	download = "⬇️",
+	upload = "⬆️",
+	
+	-- Security
+	lock = "🔒",
+	unlock = "🔓",
+	visibility = "👁️",
+	visibility_off = "🚫",
+	
+	-- Misc
+	info = "ℹ️",
+	warning = "⚠️",
+	error = "❌",
+	success = "✅",
+	help = "❓",
+	close = "✕",
+	check = "✓",
+	dot = "●",
+}
+
+-- ============================================
+-- THEME (Liquid Glass / Glassmorphism)
 -- ============================================
 
 local Theme = {
-	Background          = Color3.fromRGB(20, 20, 20),
-	BackgroundSecondary = Color3.fromRGB(28, 28, 28),
-	BackgroundTertiary  = Color3.fromRGB(36, 36, 36),
-	Border              = Color3.fromRGB(50, 50, 50),
-	Accent              = Color3.fromRGB(0, 120, 212),
-	AccentLight         = Color3.fromRGB(0, 140, 240),
-	AccentDark          = Color3.fromRGB(0, 100, 180),
-	Text                = Color3.fromRGB(230, 230, 230),
-	TextSecondary       = Color3.fromRGB(180, 180, 180),
-	TextMuted           = Color3.fromRGB(130, 130, 130),
-	TextInverse         = Color3.fromRGB(20, 20, 20),
-	Success             = Color3.fromRGB(76, 175, 80),
-	Warning             = Color3.fromRGB(255, 193, 7),
-	Error               = Color3.fromRGB(244, 67, 54),
-	Button              = Color3.fromRGB(45, 45, 45),
-	ButtonHover         = Color3.fromRGB(55, 55, 55),
-	ButtonPress         = Color3.fromRGB(35, 35, 35),
-	ButtonAccent        = Color3.fromRGB(0, 120, 212),
-	ButtonAccentHover   = Color3.fromRGB(0, 140, 240),
-	ToggleOn            = Color3.fromRGB(0, 120, 212),
-	ToggleOff           = Color3.fromRGB(70, 70, 70),
-	ToggleThumb         = Color3.fromRGB(200, 200, 200),
-	SliderTrack         = Color3.fromRGB(70, 70, 70),
-	SliderFill          = Color3.fromRGB(0, 120, 212),
-	SliderThumb         = Color3.fromRGB(200, 200, 200),
-	Scrollbar           = Color3.fromRGB(60, 60, 60),
-	TabActive           = Color3.fromRGB(0, 120, 212),
-	TabInactive         = Color3.fromRGB(160, 160, 160),
-	TabBackground       = Color3.fromRGB(22, 22, 22),
+	Background          = Color3.fromRGB(15, 15, 20),
+	BackgroundSecondary = Color3.fromRGB(25, 25, 35),
+	BackgroundTertiary  = Color3.fromRGB(35, 35, 50),
+	Border              = Color3.fromRGB(70, 70, 90),
+	Accent              = Color3.fromRGB(0, 150, 255),
+	AccentLight         = Color3.fromRGB(100, 180, 255),
+	AccentDark          = Color3.fromRGB(0, 100, 200),
+	Text                = Color3.fromRGB(245, 245, 255),
+	TextSecondary       = Color3.fromRGB(200, 200, 220),
+	TextMuted           = Color3.fromRGB(150, 150, 180),
+	TextInverse         = Color3.fromRGB(15, 15, 20),
+	Success             = Color3.fromRGB(100, 200, 100),
+	Warning             = Color3.fromRGB(255, 200, 50),
+	Error               = Color3.fromRGB(255, 80, 80),
+	Button              = Color3.fromRGB(50, 50, 70),
+	ButtonHover         = Color3.fromRGB(70, 70, 95),
+	ButtonPress         = Color3.fromRGB(40, 40, 55),
+	ButtonAccent        = Color3.fromRGB(0, 150, 255),
+	ButtonAccentHover   = Color3.fromRGB(50, 170, 255),
+	ToggleOn            = Color3.fromRGB(0, 150, 255),
+	ToggleOff           = Color3.fromRGB(80, 80, 100),
+	ToggleThumb         = Color3.fromRGB(255, 255, 255),
+	SliderTrack         = Color3.fromRGB(60, 60, 80),
+	SliderFill          = Color3.fromRGB(0, 150, 255),
+	SliderThumb         = Color3.fromRGB(255, 255, 255),
+	Scrollbar           = Color3.fromRGB(70, 70, 90),
+	TabActive           = Color3.fromRGB(0, 150, 255),
+	TabInactive         = Color3.fromRGB(150, 150, 180),
+	TabBackground       = Color3.fromRGB(20, 20, 30),
+	
+	-- Glassmorphism properties
+	GlassBlur = 20,
+	GlassTransparency = 0.85,
+	GlassBorderTransparency = 0.3,
 }
 
 -- ============================================
@@ -87,11 +156,36 @@ local function New(class, props)
 	return inst
 end
 
-local function Tween(obj, props, time)
-	local info = TweenInfo.new(time or 0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+-- Enhanced Tween with spring physics and better easing
+local function Tween(obj, props, time, easingStyle, easingDirection)
+	easingStyle = easingStyle or Enum.EasingStyle.Quart
+	easingDirection = easingDirection or Enum.EasingDirection.Out
+	local info = TweenInfo.new(time or 0.2, easingStyle, easingDirection)
 	local t = TweenService:Create(obj, info, props)
 	t:Play()
 	return t
+end
+
+-- Spring animation for bouncy effects
+local function SpringTween(obj, props, stiffness, damping)
+	stiffness = stiffness or 300
+	damping = damping or 30
+	local info = TweenInfo.new(
+		0.5,
+		Enum.EasingStyle.Elastic,
+		Enum.EasingDirection.Out,
+		0,
+		false,
+		stiffness / 1000
+	)
+	local t = TweenService:Create(obj, info, props)
+	t:Play()
+	return t
+end
+
+-- Get icon from icon system
+local function GetIcon(iconName)
+	return Icons[iconName] or iconName or ""
 end
 
 local function MakeDraggable(frame, dragObj)
@@ -176,7 +270,7 @@ function Fluent:CreateWindow(config)
 		end)
 	end
 
-	-- Main frame
+	-- Main frame with glassmorphism
 	self.Main = New("Frame", {
 		Name             = "Window",
 		Parent           = self.ScreenGui,
@@ -186,8 +280,21 @@ function Fluent:CreateWindow(config)
 		ClipsDescendants = true,
 		BorderSizePixel  = 0,
 	})
-	New("UICorner", { Parent = self.Main, CornerRadius = UDim.new(0, 8) })
-	New("UIStroke",  { Parent = self.Main, Color = Theme.Border, Thickness = 1 })
+	New("UICorner", { Parent = self.Main, CornerRadius = UDim.new(0, 12) })
+	New("UIStroke",  { Parent = self.Main, Color = Theme.Border, Thickness = 1.5, Transparency = Theme.GlassBorderTransparency })
+	
+	-- Glass effect overlay
+	New("Frame", {
+		Name                = "GlassOverlay",
+		Parent              = self.Main,
+		BackgroundColor3    = Theme.BackgroundSecondary,
+		BackgroundTransparency = Theme.GlassTransparency,
+		Size                = UDim2.new(1, 0, 1, 0),
+		Position            = UDim2.new(0, 0, 0, 0),
+		BorderSizePixel     = 0,
+		ZIndex              = 1,
+	})
+	New("UICorner", { Parent = self.Main.GlassOverlay, CornerRadius = UDim.new(0, 12) })
 
 	-- Shadow
 	New("ImageLabel", {
@@ -204,52 +311,68 @@ function Fluent:CreateWindow(config)
 		SliceCenter        = Rect.new(10, 10, 118, 118),
 	})
 
-	-- Title bar
+	-- Title bar with glass effect
 	self.TitleBar = New("Frame", {
 		Name             = "TitleBar",
 		Parent           = self.Main,
 		BackgroundColor3 = Theme.BackgroundSecondary,
-		Size             = UDim2.new(1, 0, 0, 40),
+		Size             = UDim2.new(1, 0, 0, 48),
 		BorderSizePixel  = 0,
+		ZIndex           = 2,
 	})
-	New("UICorner", { Parent = self.TitleBar, CornerRadius = UDim.new(0, 8) })
+	New("UICorner", { Parent = self.TitleBar, CornerRadius = UDim.new(0, 12) })
 
 	-- Cover bottom-left / bottom-right rounded corners on title bar
 	New("Frame", {
 		Parent           = self.TitleBar,
 		BackgroundColor3 = Theme.BackgroundSecondary,
-		Size             = UDim2.new(0, 20, 0, 10),
-		Position         = UDim2.new(0, 0, 1, -10),
+		Size             = UDim2.new(0, 24, 0, 12),
+		Position         = UDim2.new(0, 0, 1, -12),
 		BorderSizePixel  = 0,
+		ZIndex           = 2,
 	})
 	New("Frame", {
 		Parent           = self.TitleBar,
 		BackgroundColor3 = Theme.BackgroundSecondary,
-		Size             = UDim2.new(0, 20, 0, 10),
-		Position         = UDim2.new(1, -20, 1, -10),
+		Size             = UDim2.new(0, 24, 0, 12),
+		Position         = UDim2.new(1, -24, 1, -12),
 		BorderSizePixel  = 0,
+		ZIndex           = 2,
 	})
 
-	-- Bottom separator line
+	-- Bottom separator line with gradient
 	New("Frame", {
 		Parent           = self.TitleBar,
 		BackgroundColor3 = Theme.Border,
 		Size             = UDim2.new(1, 0, 0, 1),
 		Position         = UDim2.new(0, 0, 1, 0),
 		BorderSizePixel  = 0,
+		ZIndex           = 2,
 	})
 
-	-- Icon dot
+	-- Icon with glow effect
+	local iconContainer = New("Frame", {
+		Name                = "IconContainer",
+		Parent              = self.TitleBar,
+		BackgroundColor3    = Theme.Accent,
+		Size                = UDim2.new(0, 32, 0, 32),
+		Position            = UDim2.new(0, 12, 0.5, -16),
+		BorderSizePixel     = 0,
+		ZIndex              = 3,
+	})
+	New("UICorner", { Parent = iconContainer, CornerRadius = UDim.new(0, 8) })
+	
 	New("TextLabel", {
 		Name                = "Icon",
-		Parent              = self.TitleBar,
+		Parent              = iconContainer,
 		BackgroundTransparency = 1,
-		Font                = Enum.Font.Gotham,
-		Text                = "●",
-		TextColor3          = Theme.Accent,
+		Font                = Enum.Font.GothamBold,
+		Text                = "⚡",
+		TextColor3          = Color3.fromRGB(255, 255, 255),
 		TextSize            = 18,
-		Position            = UDim2.new(0, 14, 0, 10),
-		Size                = UDim2.new(0, 20, 0, 20),
+		Size                = UDim2.new(1, 0, 1, 0),
+		TextYAlignment      = Enum.TextYAlignment.Center,
+		ZIndex              = 4,
 	})
 
 	self.TitleLabel = New("TextLabel", {
@@ -260,53 +383,68 @@ function Fluent:CreateWindow(config)
 		Text                = self.Config.Title,
 		TextColor3          = Theme.Text,
 		TextSize            = 16,
-		Position            = UDim2.new(0, 42, 0, 0),
+		Position            = UDim2.new(0, 52, 0, 0),
 		Size                = UDim2.new(1, -140, 1, 0),
 		TextXAlignment      = Enum.TextXAlignment.Left,
 		TextYAlignment      = Enum.TextYAlignment.Center,
+		ZIndex              = 3,
 	})
 
-	-- Window control buttons
-	local function MakeControlButton(parent, pos, text, textSize, hoverColor)
+	-- Window control buttons with enhanced animations
+	local function MakeControlButton(parent, pos, text, textSize, hoverColor, isClose)
 		local btn = New("TextButton", {
 			Parent           = parent,
-			BackgroundColor3 = Color3.fromRGB(45, 45, 45),
-			Size             = UDim2.new(0, 34, 0, 26),
+			BackgroundColor3 = isClose and Theme.Error or Theme.Button,
+			Size             = UDim2.new(0, 36, 0, 28),
 			Position         = pos,
 			Text             = text,
-			TextColor3       = Theme.Text,
+			TextColor3       = isClose and Color3.fromRGB(255, 255, 255) or Theme.Text,
 			TextSize         = textSize,
-			Font             = Enum.Font.Gotham,
+			Font             = Enum.Font.GothamBold,
 			AutoButtonColor  = false,
 			BorderSizePixel  = 0,
 			ZIndex           = 5,
 		})
-		New("UICorner", { Parent = btn, CornerRadius = UDim.new(0, 4) })
+		New("UICorner", { Parent = btn, CornerRadius = UDim.new(0, 6) })
+		
 		btn.MouseEnter:Connect(function()
-			Tween(btn, { BackgroundColor3 = hoverColor or Color3.fromRGB(60, 60, 60) }, 0.1)
+			SpringTween(btn, { 
+				BackgroundColor3 = hoverColor or (isClose and Color3.fromRGB(255, 100, 100) or Theme.ButtonHover),
+				Size = UDim2.new(0, 38, 0, 30)
+			}, 200, 20)
 		end)
 		btn.MouseLeave:Connect(function()
-			Tween(btn, { BackgroundColor3 = Color3.fromRGB(45, 45, 45) }, 0.15)
+			Tween(btn, { 
+				BackgroundColor3 = isClose and Theme.Error or Theme.Button,
+				Size = UDim2.new(0, 36, 0, 28)
+			}, 0.15)
+		end)
+		btn.MouseButton1Down:Connect(function()
+			Tween(btn, { Size = UDim2.new(0, 34, 0, 26) }, 0.05)
+		end)
+		btn.MouseButton1Up:Connect(function()
+			Tween(btn, { Size = UDim2.new(0, 38, 0, 30) }, 0.08)
 		end)
 		return btn
 	end
 
 	self.MinimizeBtn = MakeControlButton(self.TitleBar, UDim2.new(1, -112, 0,  7), "−", 18)
 	self.MaximizeBtn = MakeControlButton(self.TitleBar, UDim2.new(1,  -75, 0,  7), "□", 14)
-	self.CloseBtn    = MakeControlButton(self.TitleBar, UDim2.new(1,  -38, 0,  7), "✕", 14, Color3.fromRGB(196, 43, 28))
+	self.CloseBtn    = MakeControlButton(self.TitleBar, UDim2.new(1,  -38, 0,  7), "✕", 14, nil, true)
 
 	self.CloseBtn.MouseButton1Click:Connect(function()    self:Destroy() end)
 	self.MinimizeBtn.MouseButton1Click:Connect(function() self:SetMinimized(not self._Minimized) end)
 	self.MaximizeBtn.MouseButton1Click:Connect(function() self:ToggleMaximize() end)
 
-	-- Navigation sidebar
+	-- Navigation sidebar with glass effect
 	self.NavBar = New("Frame", {
 		Name             = "Navigation",
 		Parent           = self.Main,
 		BackgroundColor3 = Theme.TabBackground,
-		Size             = UDim2.new(0, 48, 1, -41),
-		Position         = UDim2.new(0, 0, 0, 41),
+		Size             = UDim2.new(0, 56, 1, -49),
+		Position         = UDim2.new(0, 0, 0, 49),
 		BorderSizePixel  = 0,
+		ZIndex           = 2,
 	})
 	New("Frame", {
 		Parent           = self.NavBar,
@@ -314,6 +452,7 @@ function Fluent:CreateWindow(config)
 		Size             = UDim2.new(0, 1, 1, 0),
 		Position         = UDim2.new(1, 0, 0, 0),
 		BorderSizePixel  = 0,
+		ZIndex           = 2,
 	})
 
 	self.TabContainer = New("ScrollingFrame", {
@@ -331,7 +470,7 @@ function Fluent:CreateWindow(config)
 		Name             = "TabIndicator",
 		Parent           = self.NavBar,
 		BackgroundColor3 = Theme.Accent,
-		Size             = UDim2.new(0, 3, 0, 24),
+		Size             = UDim2.new(0, 3, 0, 28),
 		Position         = UDim2.new(1, -3, 0, 10),
 		BorderSizePixel  = 0,
 		ZIndex           = 3,
@@ -342,10 +481,11 @@ function Fluent:CreateWindow(config)
 		Name                = "PageContainer",
 		Parent              = self.Main,
 		BackgroundTransparency = 1,
-		Size                = UDim2.new(1, -49, 1, -41),
-		Position            = UDim2.new(0, 49, 0, 41),
+		Size                = UDim2.new(1, -57, 1, -49),
+		Position            = UDim2.new(0, 57, 0, 49),
 		BorderSizePixel     = 0,
 		ClipsDescendants    = true,
+		ZIndex              = 2,
 	})
 
 	MakeDraggable(self.Main, self.TitleBar)
@@ -416,29 +556,32 @@ function Window:AddTab(title, icon)
 	-- fix #1: TabMethods is now defined above
 	setmetatable(tab, { __index = TabMethods })
 
+	-- Use icon system if icon is a string key, otherwise use the icon directly
+	local displayIcon = icon and GetIcon(icon) or icon or string.upper(string.sub(title, 1, 1))
+
 	tab.Button = New("TextButton", {
 		Name             = "Tab_" .. tostring(title):gsub("%s+", "_"),
 		Parent           = self.TabContainer,
 		BackgroundColor3 = Color3.fromRGB(28, 28, 28),
-		Size             = UDim2.new(1, 0, 0, 44),
-		Position         = UDim2.new(0, 0, 0, (tab.Index - 1) * 44),
+		Size             = UDim2.new(1, 0, 0, 48),
+		Position         = UDim2.new(0, 0, 0, (tab.Index - 1) * 48),
 		Text             = "",
 		AutoButtonColor  = false,
 		BorderSizePixel  = 0,
+		ZIndex           = 2,
 	})
-
-	local displayText = icon or string.upper(string.sub(title, 1, 1))
 
 	tab.Label = New("TextLabel", {
 		Parent                = tab.Button,
 		BackgroundTransparency = 1,
-		Font                  = Enum.Font.Gotham,
-		Text                  = displayText,
+		Font                  = Enum.Font.GothamBold,
+		Text                  = displayIcon,
 		TextColor3            = Theme.TabInactive,
-		TextSize              = 18,
+		TextSize              = 20,
 		Position              = UDim2.new(0, 0, 0, 0),
 		Size                  = UDim2.new(1, 0, 1, 0),
 		TextYAlignment        = Enum.TextYAlignment.Center,
+		ZIndex                = 3,
 	})
 
 	tab.Page = New("ScrollingFrame", {
@@ -466,10 +609,16 @@ function Window:AddTab(title, icon)
 	})
 
 	tab.Button.MouseEnter:Connect(function()
-		if not tab.Active then Tween(tab.Label, { TextColor3 = Theme.Text }, 0.1) end
+		if not tab.Active then 
+			SpringTween(tab.Button, { BackgroundColor3 = Color3.fromRGB(35, 35, 45) }, 200, 20)
+			Tween(tab.Label, { TextColor3 = Theme.Text, TextSize = 22 }, 0.15)
+		end
 	end)
 	tab.Button.MouseLeave:Connect(function()
-		if not tab.Active then Tween(tab.Label, { TextColor3 = Theme.TabInactive }, 0.15) end
+		if not tab.Active then 
+			Tween(tab.Button, { BackgroundColor3 = Color3.fromRGB(28, 28, 28) }, 0.15)
+			Tween(tab.Label, { TextColor3 = Theme.TabInactive, TextSize = 20 }, 0.15)
+		end
 	end)
 	tab.Button.MouseButton1Click:Connect(function()
 		self:SelectTab(tab.Index)
@@ -501,8 +650,8 @@ function Window:SelectTab(identifier)
 		if t ~= target then
 			t.Active       = false
 			t.Page.Visible = false
-			Tween(t.Label,  { TextColor3 = Theme.TabInactive, TextSize = 18 }, 0.15)
-			Tween(t.Button, { BackgroundColor3 = Color3.fromRGB(28, 28, 28) }, 0.1)
+			Tween(t.Label,  { TextColor3 = Theme.TabInactive, TextSize = 20 }, 0.2)
+			Tween(t.Button, { BackgroundColor3 = Color3.fromRGB(28, 28, 28) }, 0.15)
 		end
 	end
 
@@ -510,10 +659,10 @@ function Window:SelectTab(identifier)
 	target.Page.Visible = true
 	self.ActiveTab      = target
 
-	local targetY = (target.Index - 1) * 44 + 10
-	Tween(self.TabIndicator, { Position = UDim2.new(1, -3, 0, targetY) }, 0.15)
-	Tween(target.Label,  { TextColor3 = Theme.Accent, TextSize = 20 }, 0.15)
-	Tween(target.Button, { BackgroundColor3 = Color3.fromRGB(24, 24, 24) }, 0.1)
+	local targetY = (target.Index - 1) * 48 + 10
+	SpringTween(self.TabIndicator, { Position = UDim2.new(1, -3, 0, targetY) }, 250, 25)
+	SpringTween(target.Label,  { TextColor3 = Theme.Accent, TextSize = 24 }, 200, 20)
+	Tween(target.Button, { BackgroundColor3 = Color3.fromRGB(24, 24, 24) }, 0.15)
 end
 
 function Window:Destroy()
@@ -631,7 +780,7 @@ end
 -- SECTION METHODS  (forward-declared above)
 -- ============================================
 
--- BUTTON
+-- BUTTON with enhanced animations
 function SectionMethods:AddButton(text, callback, description)
 	local comp = {}
 	comp.Type = "Button"
@@ -639,7 +788,7 @@ function SectionMethods:AddButton(text, callback, description)
 	local container = New("Frame", {
 		Parent              = self.Container,
 		BackgroundTransparency = 1,
-		Size                = UDim2.new(1, -10, 0, 38),
+		Size                = UDim2.new(1, -10, 0, 40),
 		LayoutOrder         = #self.Components + 1,
 		BorderSizePixel     = 0,
 	})
@@ -651,7 +800,8 @@ function SectionMethods:AddButton(text, callback, description)
 		Size             = UDim2.new(1, 0, 1, 0),
 		BorderSizePixel  = 0,
 	})
-	New("UICorner", { Parent = frame, CornerRadius = UDim.new(0, 6) })
+	New("UICorner", { Parent = frame, CornerRadius = UDim.new(0, 8) })
+	New("UIStroke",  { Parent = frame, Color = Theme.Border, Thickness = 1, Transparency = 0.5 })
 
 	local label = New("TextLabel", {
 		Parent                = frame,
@@ -660,8 +810,8 @@ function SectionMethods:AddButton(text, callback, description)
 		Text                  = text,
 		TextColor3            = Theme.Text,
 		TextSize              = 14,
-		Position              = UDim2.new(0, 12, 0, 0),
-		Size                  = UDim2.new(1, -24, 1, 0),
+		Position              = UDim2.new(0, 14, 0, 0),
+		Size                  = UDim2.new(1, -28, 1, 0),
 		TextXAlignment        = Enum.TextXAlignment.Left,
 		TextYAlignment        = Enum.TextYAlignment.Center,
 		BorderSizePixel       = 0,
@@ -676,8 +826,8 @@ function SectionMethods:AddButton(text, callback, description)
 			Text                  = description,
 			TextColor3            = Theme.TextMuted,
 			TextSize              = 12,
-			Position              = UDim2.new(0, 12, 0, 0),
-			Size                  = UDim2.new(1, -24, 1, 0),
+			Position              = UDim2.new(0, 14, 0, 0),
+			Size                  = UDim2.new(1, -28, 1, 0),
 			TextXAlignment        = Enum.TextXAlignment.Right,
 			TextYAlignment        = Enum.TextYAlignment.Center,
 			BorderSizePixel       = 0,
@@ -695,10 +845,19 @@ function SectionMethods:AddButton(text, callback, description)
 	})
 
 	btn.MouseButton1Click:Connect(function() pcall(callback) end)
-	btn.MouseEnter:Connect(function()       Tween(frame, { BackgroundColor3 = Theme.ButtonHover  }, 0.1)  end)
-	btn.MouseLeave:Connect(function()       Tween(frame, { BackgroundColor3 = Theme.Button        }, 0.15) end)
-	btn.MouseButton1Down:Connect(function() Tween(frame, { BackgroundColor3 = Theme.ButtonPress   }, 0.05) end)
-	btn.MouseButton1Up:Connect(function()   Tween(frame, { BackgroundColor3 = Theme.ButtonHover   }, 0.08) end)
+	btn.MouseEnter:Connect(function()       
+		SpringTween(frame, { BackgroundColor3 = Theme.ButtonHover }, 200, 20)
+		Tween(frame, { Size = UDim2.new(1, 2, 1, 2), Position = UDim2.new(0, -1, 0, -1) }, 0.1)
+	end)
+	btn.MouseLeave:Connect(function()       
+		Tween(frame, { BackgroundColor3 = Theme.Button, Size = UDim2.new(1, 0, 1, 0), Position = UDim2.new(0, 0, 0, 0) }, 0.15)
+	end)
+	btn.MouseButton1Down:Connect(function() 
+		Tween(frame, { BackgroundColor3 = Theme.ButtonPress, Size = UDim2.new(1, -2, 1, -2), Position = UDim2.new(0, 1, 0, 1) }, 0.05)
+	end)
+	btn.MouseButton1Up:Connect(function()   
+		Tween(frame, { BackgroundColor3 = Theme.ButtonHover, Size = UDim2.new(1, 2, 1, 2), Position = UDim2.new(0, -1, 0, -1) }, 0.08)
+	end)
 
 	comp.SetText = function(_, newText) label.Text = newText end
 	comp.Destroy = function() container:Destroy() end
@@ -707,7 +866,7 @@ function SectionMethods:AddButton(text, callback, description)
 	return comp
 end
 
--- ACCENT BUTTON
+-- ACCENT BUTTON with enhanced animations
 function SectionMethods:AddAccentButton(text, callback, description)
 	local comp = {}
 	comp.Type = "AccentButton"
@@ -715,7 +874,7 @@ function SectionMethods:AddAccentButton(text, callback, description)
 	local container = New("Frame", {
 		Parent              = self.Container,
 		BackgroundTransparency = 1,
-		Size                = UDim2.new(1, -10, 0, 38),
+		Size                = UDim2.new(1, -10, 0, 40),
 		LayoutOrder         = #self.Components + 1,
 		BorderSizePixel     = 0,
 	})
@@ -727,7 +886,7 @@ function SectionMethods:AddAccentButton(text, callback, description)
 		Size             = UDim2.new(1, 0, 1, 0),
 		BorderSizePixel  = 0,
 	})
-	New("UICorner", { Parent = frame, CornerRadius = UDim.new(0, 6) })
+	New("UICorner", { Parent = frame, CornerRadius = UDim.new(0, 8) })
 
 	New("TextLabel", {
 		Parent                = frame,
@@ -736,9 +895,10 @@ function SectionMethods:AddAccentButton(text, callback, description)
 		Text                  = text,
 		TextColor3            = Theme.TextInverse,
 		TextSize              = 14,
-		Position              = UDim2.new(0, 12, 0, 0),
-		Size                  = UDim2.new(1, -24, 1, 0),
+		Position              = UDim2.new(0, 0, 0, 0),
+		Size                  = UDim2.new(1, 0, 1, 0),
 		TextXAlignment        = Enum.TextXAlignment.Center,
+		TextYAlignment        = Enum.TextYAlignment.Center,
 		BorderSizePixel       = 0,
 	})
 
@@ -753,10 +913,19 @@ function SectionMethods:AddAccentButton(text, callback, description)
 	})
 
 	btn.MouseButton1Click:Connect(function() pcall(callback) end)
-	btn.MouseEnter:Connect(function()       Tween(frame, { BackgroundColor3 = Theme.ButtonAccentHover }, 0.1)  end)
-	btn.MouseLeave:Connect(function()       Tween(frame, { BackgroundColor3 = Theme.ButtonAccent      }, 0.15) end)
-	btn.MouseButton1Down:Connect(function() Tween(frame, { BackgroundColor3 = Theme.AccentDark        }, 0.05) end)
-	btn.MouseButton1Up:Connect(function()   Tween(frame, { BackgroundColor3 = Theme.ButtonAccentHover }, 0.08) end)
+	btn.MouseEnter:Connect(function()       
+		SpringTween(frame, { BackgroundColor3 = Theme.ButtonAccentHover }, 200, 20)
+		Tween(frame, { Size = UDim2.new(1, 2, 1, 2), Position = UDim2.new(0, -1, 0, -1) }, 0.1)
+	end)
+	btn.MouseLeave:Connect(function()       
+		Tween(frame, { BackgroundColor3 = Theme.ButtonAccent, Size = UDim2.new(1, 0, 1, 0), Position = UDim2.new(0, 0, 0, 0) }, 0.15)
+	end)
+	btn.MouseButton1Down:Connect(function() 
+		Tween(frame, { BackgroundColor3 = Theme.AccentDark, Size = UDim2.new(1, -2, 1, -2), Position = UDim2.new(0, 1, 0, 1) }, 0.05)
+	end)
+	btn.MouseButton1Up:Connect(function()   
+		Tween(frame, { BackgroundColor3 = Theme.ButtonAccentHover, Size = UDim2.new(1, 2, 1, 2), Position = UDim2.new(0, -1, 0, -1) }, 0.08)
+	end)
 
 	comp.Destroy = function() container:Destroy() end
 
@@ -764,7 +933,7 @@ function SectionMethods:AddAccentButton(text, callback, description)
 	return comp
 end
 
--- TOGGLE
+-- TOGGLE with enhanced animations
 function SectionMethods:AddToggle(config)
 	config = config or {}
 
@@ -778,7 +947,7 @@ function SectionMethods:AddToggle(config)
 	local container = New("Frame", {
 		Parent              = self.Container,
 		BackgroundTransparency = 1,
-		Size                = UDim2.new(1, -10, 0, desc and 46 or 36),
+		Size                = UDim2.new(1, -10, 0, desc and 48 or 40),
 		LayoutOrder         = #self.Components + 1,
 		BorderSizePixel     = 0,
 	})
@@ -790,7 +959,8 @@ function SectionMethods:AddToggle(config)
 		Size             = UDim2.new(1, 0, 1, 0),
 		BorderSizePixel  = 0,
 	})
-	New("UICorner", { Parent = bg, CornerRadius = UDim.new(0, 6) })
+	New("UICorner", { Parent = bg, CornerRadius = UDim.new(0, 8) })
+	New("UIStroke",  { Parent = bg, Color = Theme.Border, Thickness = 1, Transparency = 0.5 })
 
 	local label = New("TextLabel", {
 		Parent                = bg,
@@ -799,7 +969,7 @@ function SectionMethods:AddToggle(config)
 		Text                  = title,
 		TextColor3            = Theme.Text,
 		TextSize              = 14,
-		Position              = UDim2.new(0, 12, 0, desc and 4 or 0),
+		Position              = UDim2.new(0, 14, 0, desc and 4 or 0),
 		Size                  = UDim2.new(1, -80, 0, 18),
 		TextXAlignment        = Enum.TextXAlignment.Left,
 		TextYAlignment        = Enum.TextYAlignment.Center,
@@ -815,7 +985,7 @@ function SectionMethods:AddToggle(config)
 			Text                  = desc,
 			TextColor3            = Theme.TextMuted,
 			TextSize              = 11,
-			Position              = UDim2.new(0, 12, 0, 22),
+			Position              = UDim2.new(0, 14, 0, 22),
 			Size                  = UDim2.new(1, -80, 0, 16),
 			TextXAlignment        = Enum.TextXAlignment.Left,
 			TextYAlignment        = Enum.TextYAlignment.Top,
@@ -826,18 +996,19 @@ function SectionMethods:AddToggle(config)
 	local track = New("Frame", {
 		Parent           = bg,
 		BackgroundColor3 = comp.Value and Theme.ToggleOn or Theme.ToggleOff,
-		Size             = UDim2.new(0, 44, 0, 22),
-		Position         = UDim2.new(1, -56, 0.5, -11),
+		Size             = UDim2.new(0, 48, 0, 24),
+		Position         = UDim2.new(1, -62, 0.5, -12),
 		BorderSizePixel  = 0,
 	})
 	New("UICorner", { Parent = track, CornerRadius = UDim.new(1, 0) })
+	New("UIStroke",  { Parent = track, Color = Theme.Border, Thickness = 1, Transparency = 0.5 })
 	comp.Track = track
 
 	local thumb = New("Frame", {
 		Parent           = track,
 		BackgroundColor3 = Theme.ToggleThumb,
-		Size             = UDim2.new(0, 16, 0, 16),
-		Position         = comp.Value and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8),
+		Size             = UDim2.new(0, 18, 0, 18),
+		Position         = comp.Value and UDim2.new(1, -21, 0.5, -9) or UDim2.new(0, 3, 0.5, -9),
 		BorderSizePixel  = 0,
 	})
 	New("UICorner", { Parent = thumb, CornerRadius = UDim.new(1, 0) })
@@ -857,18 +1028,22 @@ function SectionMethods:AddToggle(config)
 	local function SetState(value)
 		comp.Value = value
 		if value then
-			Tween(track, { BackgroundColor3 = Theme.ToggleOn  }, 0.12)
-			Tween(thumb, { Position = UDim2.new(1, -19, 0.5, -8) }, 0.15)
+			SpringTween(track, { BackgroundColor3 = Theme.ToggleOn }, 200, 20)
+			SpringTween(thumb, { Position = UDim2.new(1, -21, 0.5, -9) }, 250, 25)
 		else
-			Tween(track, { BackgroundColor3 = Theme.ToggleOff }, 0.12)
-			Tween(thumb, { Position = UDim2.new(0, 3,  0.5, -8) }, 0.15)
+			SpringTween(track, { BackgroundColor3 = Theme.ToggleOff }, 200, 20)
+			SpringTween(thumb, { Position = UDim2.new(0, 3,  0.5, -9) }, 250, 25)
 		end
 		pcall(comp.Callback, value)
 	end
 
 	btn.MouseButton1Click:Connect(function() SetState(not comp.Value) end)
-	btn.MouseEnter:Connect(function()  Tween(bg, { BackgroundColor3 = Color3.fromRGB(42, 42, 42) }, 0.1)  end)
-	btn.MouseLeave:Connect(function()  Tween(bg, { BackgroundColor3 = Theme.BackgroundTertiary   }, 0.15) end)
+	btn.MouseEnter:Connect(function()  
+		SpringTween(bg, { BackgroundColor3 = Color3.fromRGB(45, 45, 65) }, 200, 20)
+	end)
+	btn.MouseLeave:Connect(function()  
+		Tween(bg, { BackgroundColor3 = Theme.BackgroundTertiary }, 0.15)
+	end)
 
 	comp.SetValue = function(_, val) SetState(val) end
 	comp.GetValue = function() return comp.Value end
@@ -878,7 +1053,7 @@ function SectionMethods:AddToggle(config)
 	return comp
 end
 
--- SLIDER
+-- SLIDER with enhanced animations
 function SectionMethods:AddSlider(config)
 	config = config or {}
 
@@ -895,7 +1070,7 @@ function SectionMethods:AddSlider(config)
 	local container = New("Frame", {
 		Parent              = self.Container,
 		BackgroundTransparency = 1,
-		Size                = UDim2.new(1, -10, 0, 52),
+		Size                = UDim2.new(1, -10, 0, 56),
 		LayoutOrder         = #self.Components + 1,
 		BorderSizePixel     = 0,
 	})
@@ -907,7 +1082,8 @@ function SectionMethods:AddSlider(config)
 		Size             = UDim2.new(1, 0, 1, 0),
 		BorderSizePixel  = 0,
 	})
-	New("UICorner", { Parent = bg, CornerRadius = UDim.new(0, 6) })
+	New("UICorner", { Parent = bg, CornerRadius = UDim.new(0, 8) })
+	New("UIStroke",  { Parent = bg, Color = Theme.Border, Thickness = 1, Transparency = 0.5 })
 
 	New("TextLabel", {
 		Parent                = bg,
@@ -916,7 +1092,7 @@ function SectionMethods:AddSlider(config)
 		Text                  = title,
 		TextColor3            = Theme.Text,
 		TextSize              = 14,
-		Position              = UDim2.new(0, 12, 0, 6),
+		Position              = UDim2.new(0, 14, 0, 6),
 		Size                  = UDim2.new(1, -80, 0, 18),
 		TextXAlignment        = Enum.TextXAlignment.Left,
 		BorderSizePixel       = 0,
@@ -939,11 +1115,12 @@ function SectionMethods:AddSlider(config)
 	local track = New("Frame", {
 		Parent           = bg,
 		BackgroundColor3 = Theme.SliderTrack,
-		Size             = UDim2.new(1, -24, 0, 4),
-		Position         = UDim2.new(0, 12, 1, -16),
+		Size             = UDim2.new(1, -28, 0, 6),
+		Position         = UDim2.new(0, 14, 1, -18),
 		BorderSizePixel  = 0,
 	})
 	New("UICorner", { Parent = track, CornerRadius = UDim.new(1, 0) })
+	New("UIStroke",  { Parent = track, Color = Theme.Border, Thickness = 1, Transparency = 0.5 })
 
 	local fill = New("Frame", {
 		Parent           = track,
@@ -957,8 +1134,8 @@ function SectionMethods:AddSlider(config)
 	local thumb = New("Frame", {
 		Parent           = track,
 		BackgroundColor3 = Theme.SliderThumb,
-		Size             = UDim2.new(0, 16, 0, 16),
-		Position         = UDim2.new(0, -8, 0.5, -8),
+		Size             = UDim2.new(0, 18, 0, 18),
+		Position         = UDim2.new(0, -9, 0.5, -9),
 		BorderSizePixel  = 0,
 		ZIndex           = 3,
 	})
@@ -966,18 +1143,18 @@ function SectionMethods:AddSlider(config)
 	New("UIStroke",  { Parent = thumb, Color = Color3.fromRGB(30, 30, 30), Thickness = 1, Transparency = 0.4 })
 	comp.Thumb = thumb
 
-	-- fix #6: always set initial position
+	-- Always set initial position
 	local function UpdatePosition(value)
 		value = math.clamp(value, comp.Min, comp.Max)
 		local pct = (comp.Max ~= comp.Min) and ((value - comp.Min) / (comp.Max - comp.Min)) or 0
 		fill.Size       = UDim2.new(pct, 0, 1, 0)
-		thumb.Position  = UDim2.new(pct, -8, 0.5, -8)
+		thumb.Position  = UDim2.new(pct, -9, 0.5, -9)
 		valLabel.Text   = tostring(value) .. comp.Suffix
 		comp.Value      = value
 		pcall(comp.Callback, value)
 	end
 
-	-- fix #5: use InputBegan (has Position) instead of MouseButton1Click
+	-- Use InputBegan (has Position) instead of MouseButton1Click
 	local hitArea = New("TextButton", {
 		Parent              = container,
 		BackgroundTransparency = 1,
@@ -1005,12 +1182,14 @@ function SectionMethods:AddSlider(config)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
 			dragging = true
 			UpdateFromPosition(input.Position.X)
+			SpringTween(thumb, { Size = UDim2.new(0, 22, 0, 22) }, 150, 15)
 		end
 	end)
 
 	hitArea.InputEnded:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
 			dragging = false
+			Tween(thumb, { Size = UDim2.new(0, 18, 0, 18) }, 0.15)
 		end
 	end)
 
@@ -1020,8 +1199,16 @@ function SectionMethods:AddSlider(config)
 		end
 	end)
 
-	hitArea.MouseEnter:Connect(function()  Tween(bg, { BackgroundColor3 = Color3.fromRGB(42, 42, 42) }, 0.1)  end)
-	hitArea.MouseLeave:Connect(function()  Tween(bg, { BackgroundColor3 = Theme.BackgroundTertiary   }, 0.15) end)
+	hitArea.MouseEnter:Connect(function()  
+		SpringTween(bg, { BackgroundColor3 = Color3.fromRGB(45, 45, 65) }, 200, 20)
+		SpringTween(thumb, { Size = UDim2.new(0, 20, 0, 20) }, 150, 15)
+	end)
+	hitArea.MouseLeave:Connect(function()  
+		if not dragging then
+			Tween(bg, { BackgroundColor3 = Theme.BackgroundTertiary }, 0.15)
+			Tween(thumb, { Size = UDim2.new(0, 18, 0, 18) }, 0.15)
+		end
+	end)
 
 	-- Init fill/thumb position
 	UpdatePosition(comp.Value)
@@ -1034,8 +1221,7 @@ function SectionMethods:AddSlider(config)
 	return comp
 end
 
--- DROPDOWN
--- fix #2: renamed boolean state to comp._open; Open/Close are plain functions (not methods)
+-- DROPDOWN with search, icons, and enhanced animations
 function SectionMethods:AddDropdown(config)
 	config = config or {}
 
@@ -1044,17 +1230,17 @@ function SectionMethods:AddDropdown(config)
 	local title  = config.Title       or config.title       or "Dropdown"
 	local values = config.Values      or config.values      or config.Options or config.options or {}
 	local cb     = config.Callback    or config.OnChanged   or config.callback or config.OnSelected or function() end
+	local icon   = config.Icon        or config.icon        or nil
 
 	comp.Values   = values
-	-- fix #3: honour Default without overwriting it in RebuildItems
 	comp.Selected = config.Default or config.default or (values[1] or "None")
-	comp._open    = false  -- renamed from comp.Open (was clashing with method)
+	comp._open    = false
 
 	local container = New("Frame", {
 		Name                = "Dropdown_" .. tostring(title):gsub("%s+", "_"),
 		Parent              = self.Container,
 		BackgroundTransparency = 1,
-		Size                = UDim2.new(1, -10, 0, 36),
+		Size                = UDim2.new(1, -10, 0, 40),
 		LayoutOrder         = #self.Components + 1,
 		BorderSizePixel     = 0,
 		ClipsDescendants    = false,
@@ -1065,10 +1251,29 @@ function SectionMethods:AddDropdown(config)
 	local bg = New("Frame", {
 		Parent           = container,
 		BackgroundColor3 = Theme.BackgroundTertiary,
-		Size             = UDim2.new(1, 0, 0, 36),
+		Size             = UDim2.new(1, 0, 0, 40),
 		BorderSizePixel  = 0,
 	})
-	New("UICorner", { Parent = bg, CornerRadius = UDim.new(0, 6) })
+	New("UICorner", { Parent = bg, CornerRadius = UDim.new(0, 8) })
+	New("UIStroke",  { Parent = bg, Color = Theme.Border, Thickness = 1, Transparency = 0.5 })
+
+	-- Icon support
+	local iconOffset = 0
+	if icon then
+		local iconLabel = New("TextLabel", {
+			Parent                = bg,
+			BackgroundTransparency = 1,
+			Font                  = Enum.Font.GothamBold,
+			Text                  = GetIcon(icon),
+			TextColor3            = Theme.Accent,
+			TextSize              = 16,
+			Position              = UDim2.new(0, 12, 0.5, -8),
+			Size                  = UDim2.new(0, 20, 0, 20),
+			TextYAlignment        = Enum.TextYAlignment.Center,
+			ZIndex                = 2,
+		})
+		iconOffset = 32
+	end
 
 	New("TextLabel", {
 		Parent                = bg,
@@ -1077,51 +1282,88 @@ function SectionMethods:AddDropdown(config)
 		Text                  = title,
 		TextColor3            = Theme.Text,
 		TextSize              = 14,
-		Position              = UDim2.new(0, 12, 0, 0),
-		Size                  = UDim2.new(1, -80, 1, 0),
+		Position              = UDim2.new(0, 12 + iconOffset, 0, 4),
+		Size                  = UDim2.new(1, -100 - iconOffset, 0, 18),
 		TextXAlignment        = Enum.TextXAlignment.Left,
 		BorderSizePixel       = 0,
+		ZIndex                = 2,
 	})
 
 	local valLabel = New("TextLabel", {
 		Parent                = bg,
 		BackgroundTransparency = 1,
-		Font                  = Enum.Font.Gotham,
+		Font                  = Enum.Font.GothamSemibold,
 		Text                  = tostring(comp.Selected),
 		TextColor3            = Theme.Accent,
-		TextSize              = 12,
-		Position              = UDim2.new(0, 0, 0, 0),
-		Size                  = UDim2.new(1, -40, 1, 0),
-		TextXAlignment        = Enum.TextXAlignment.Right,
+		TextSize              = 13,
+		Position              = UDim2.new(0, 12 + iconOffset, 0, 22),
+		Size                  = UDim2.new(1, -50 - iconOffset, 0, 16),
+		TextXAlignment        = Enum.TextXAlignment.Left,
 		BorderSizePixel       = 0,
+		ZIndex                = 2,
 	})
 	comp.ValueLabel = valLabel
 
 	local arrow = New("TextLabel", {
 		Parent                = bg,
 		BackgroundTransparency = 1,
-		Font                  = Enum.Font.Gotham,
-		Text                  = "▼",
+		Font                  = Enum.Font.GothamBold,
+		Text                  = Icons.expand_more,
 		TextColor3            = Theme.TextMuted,
-		TextSize              = 10,
-		Position              = UDim2.new(1, -24, 0, 0),
-		Size                  = UDim2.new(0, 20, 1, 0),
-		BorderSizePixel       = 0,
+		TextSize              = 14,
+		Position              = UDim2.new(1, -28, 0.5, -7),
+		Size                  = UDim2.new(0, 20, 0, 20),
+		TextYAlignment        = Enum.TextYAlignment.Center,
+		ZIndex                = 2,
 	})
 	comp.Arrow = arrow
 
-	local list = New("Frame", {
+	-- Search box (shown when dropdown is open)
+	local searchBox = New("Frame", {
 		Parent           = container,
 		BackgroundColor3 = Theme.BackgroundSecondary,
 		Size             = UDim2.new(1, -10, 0, 0),
-		Position         = UDim2.new(0, 5, 0, 38),
+		Position         = UDim2.new(0, 5, 0, 42),
 		BorderSizePixel  = 0,
 		Visible          = false,
 		ClipsDescendants = true,
 		ZIndex           = 20,
 	})
+	New("UICorner", { Parent = searchBox, CornerRadius = UDim.new(0, 6) })
+	New("UIStroke",  { Parent = searchBox, Color = Theme.Border, Thickness = 1, Transparency = 0.5 })
+
+	local searchInput = New("TextBox", {
+		Parent            = searchBox,
+		BackgroundTransparency = 1,
+		Font              = Enum.Font.Gotham,
+		Text              = "",
+		PlaceholderText   = "🔍 Search...",
+		PlaceholderColor3 = Theme.TextMuted,
+		TextColor3        = Theme.Text,
+		TextSize          = 12,
+		Position          = UDim2.new(0, 8, 0, 0),
+		Size              = UDim2.new(1, -16, 1, 0),
+		TextXAlignment    = Enum.TextXAlignment.Left,
+		ClearTextOnFocus  = false,
+		BorderSizePixel   = 0,
+		ZIndex            = 21,
+	})
+	comp.SearchInput = searchInput
+
+	local list = New("ScrollingFrame", {
+		Parent           = container,
+		BackgroundColor3 = Theme.BackgroundSecondary,
+		Size             = UDim2.new(1, -10, 0, 0),
+		Position         = UDim2.new(0, 5, 0, 42),
+		BorderSizePixel  = 0,
+		Visible          = false,
+		ClipsDescendants = true,
+		ZIndex           = 20,
+		ScrollBarThickness    = 4,
+		ScrollBarImageColor3  = Theme.Scrollbar,
+	})
 	New("UICorner", { Parent = list, CornerRadius = UDim.new(0, 6) })
-	New("UIStroke",  { Parent = list, Color = Theme.Border, Thickness = 1 })
+	New("UIStroke",  { Parent = list, Color = Theme.Border, Thickness = 1, Transparency = 0.5 })
 
 	New("UIListLayout", {
 		Parent    = list,
@@ -1132,49 +1374,61 @@ function SectionMethods:AddDropdown(config)
 
 	local listItems = {}
 
-	-- fix #3: RebuildItems only resets Selected when no default exists
-	local function RebuildItems(newValues)
+	local function RebuildItems(newValues, filter)
 		for _, item in ipairs(listItems) do item:Destroy() end
 		listItems = {}
 		comp.Values = newValues or comp.Values
 
-		for _, v in ipairs(comp.Values) do
+		for i, v in ipairs(comp.Values) do
+			if filter and filter ~= "" and not string.lower(tostring(v)):find(string.lower(filter)) then
+				continue
+			end
+
 			local item = New("TextButton", {
 				Parent           = list,
-				BackgroundColor3 = Color3.fromRGB(32, 32, 32),
-				Size             = UDim2.new(1, -8, 0, 30),
+				BackgroundColor3 = Color3.fromRGB(35, 35, 50),
+				Size             = UDim2.new(1, -8, 0, 32),
 				Position         = UDim2.new(0, 4, 0, 0),
 				Text             = tostring(v),
 				TextColor3       = Theme.Text,
-				TextSize         = 12,
+				TextSize         = 13,
 				Font             = Enum.Font.Gotham,
 				TextXAlignment   = Enum.TextXAlignment.Left,
 				AutoButtonColor  = false,
 				BorderSizePixel  = 0,
 				ZIndex           = 21,
+				LayoutOrder      = i,
 			})
-			New("UIPadding", { Parent = item, PaddingLeft = UDim.new(0, 8) })
+			New("UIPadding", { Parent = item, PaddingLeft = UDim.new(0, 10) })
 			New("UICorner",  { Parent = item, CornerRadius = UDim.new(0, 4) })
 
-			item.MouseEnter:Connect(function()  Tween(item, { BackgroundColor3 = Color3.fromRGB(45, 45, 45) }, 0.08) end)
-			item.MouseLeave:Connect(function()  Tween(item, { BackgroundColor3 = Color3.fromRGB(32, 32, 32) }, 0.1)  end)
+			item.MouseEnter:Connect(function()  
+				SpringTween(item, { BackgroundColor3 = Theme.Accent }, 150, 15)
+				Tween(item, { TextColor3 = Theme.TextInverse }, 0.1)
+			end)
+			item.MouseLeave:Connect(function()  
+				Tween(item, { BackgroundColor3 = Color3.fromRGB(35, 35, 50) }, 0.1)
+				Tween(item, { TextColor3 = Theme.Text }, 0.1)
+			end)
 			item.MouseButton1Click:Connect(function()
 				comp.Selected  = v
 				valLabel.Text  = tostring(v)
 				pcall(cb, v)
+				comp.Close()
 			end)
 
 			table.insert(listItems, item)
 		end
 
-		-- Only reset selected if nothing is set
-		if not comp.Selected and #comp.Values > 0 then
-			comp.Selected = comp.Values[1]
-			valLabel.Text = tostring(comp.Values[1])
-		end
+		list.CanvasSize = UDim2.new(0, 0, 0, #listItems * 34 + 8)
 	end
 
 	RebuildItems(values)
+
+	-- Search functionality
+	searchInput:GetPropertyChangedSignal("Text"):Connect(function()
+		RebuildItems(values, searchInput.Text)
+	end)
 
 	local toggleBtn = New("TextButton", {
 		Parent              = bg,
@@ -1186,23 +1440,34 @@ function SectionMethods:AddDropdown(config)
 		BorderSizePixel     = 0,
 	})
 
-	-- fix #2: Open/Close are plain functions, no longer conflicting with the boolean
 	comp.Open = function()
 		if comp._open or #comp.Values == 0 then return end
 		comp._open  = true
+		
+		-- Show search if we have many items
+		if #comp.Values > 5 then
+			searchBox.Visible = true
+			searchBox.Size = UDim2.new(1, -10, 0, 32)
+			list.Position = UDim2.new(0, 5, 0, 76)
+		else
+			searchBox.Visible = false
+			list.Position = UDim2.new(0, 5, 0, 42)
+		end
+		
 		list.Visible = true
-		arrow.Text   = "▲"
-		local h = math.min(#comp.Values * 32 + 12, 200)
+		arrow.Text   = Icons.expand_less
+		local h = math.min(#comp.Values * 34 + 12, 200)
 		list.Size   = UDim2.new(1, -10, 0, h)
-		Tween(arrow, { Rotation = 180 }, 0.15)
+		SpringTween(arrow, { Rotation = 180 }, 200, 20)
 	end
 
 	comp.Close = function()
 		if not comp._open then return end
 		comp._open  = false
-		arrow.Text   = "▼"
-		Tween(arrow, { Rotation = 0 }, 0.12)
-		task.delay(0.05, function()
+		arrow.Text   = Icons.expand_more
+		Tween(arrow, { Rotation = 0 }, 0.15)
+		searchBox.Visible = false
+		task.delay(0.1, function()
 			if list and list.Parent then
 				list.Visible = false
 			end
@@ -1212,8 +1477,12 @@ function SectionMethods:AddDropdown(config)
 	toggleBtn.MouseButton1Click:Connect(function()
 		if comp._open then comp.Close() else comp.Open() end
 	end)
-	toggleBtn.MouseEnter:Connect(function()  Tween(bg, { BackgroundColor3 = Color3.fromRGB(42, 42, 42) }, 0.1)  end)
-	toggleBtn.MouseLeave:Connect(function()  Tween(bg, { BackgroundColor3 = Theme.BackgroundTertiary   }, 0.15) end)
+	toggleBtn.MouseEnter:Connect(function()  
+		SpringTween(bg, { BackgroundColor3 = Color3.fromRGB(45, 45, 65) }, 200, 20)
+	end)
+	toggleBtn.MouseLeave:Connect(function()  
+		Tween(bg, { BackgroundColor3 = Theme.BackgroundTertiary }, 0.15)
+	end)
 
 	comp.SetValues = function(_, newVals)
 		comp.Close()
@@ -1282,7 +1551,7 @@ function SectionMethods:AddLabel(text, description)
 	return comp
 end
 
--- KEYBIND
+-- KEYBIND with enhanced animations
 function SectionMethods:AddKeybind(config)
 	config = config or {}
 
@@ -1298,7 +1567,7 @@ function SectionMethods:AddKeybind(config)
 	local container = New("Frame", {
 		Parent              = self.Container,
 		BackgroundTransparency = 1,
-		Size                = UDim2.new(1, -10, 0, 36),
+		Size                = UDim2.new(1, -10, 0, 40),
 		LayoutOrder         = #self.Components + 1,
 		BorderSizePixel     = 0,
 	})
@@ -1310,7 +1579,8 @@ function SectionMethods:AddKeybind(config)
 		Size             = UDim2.new(1, 0, 1, 0),
 		BorderSizePixel  = 0,
 	})
-	New("UICorner", { Parent = bg, CornerRadius = UDim.new(0, 6) })
+	New("UICorner", { Parent = bg, CornerRadius = UDim.new(0, 8) })
+	New("UIStroke",  { Parent = bg, Color = Theme.Border, Thickness = 1, Transparency = 0.5 })
 
 	New("TextLabel", {
 		Parent                = bg,
@@ -1319,7 +1589,7 @@ function SectionMethods:AddKeybind(config)
 		Text                  = title,
 		TextColor3            = Theme.Text,
 		TextSize              = 14,
-		Position              = UDim2.new(0, 12, 0, 0),
+		Position              = UDim2.new(0, 14, 0, 0),
 		Size                  = UDim2.new(1, -90, 1, 0),
 		TextXAlignment        = Enum.TextXAlignment.Left,
 		BorderSizePixel       = 0,
@@ -1339,9 +1609,9 @@ function SectionMethods:AddKeybind(config)
 
 	local keyBtn = New("TextButton", {
 		Parent           = bg,
-		BackgroundColor3 = Color3.fromRGB(40, 40, 40),
-		Size             = UDim2.new(0, 70, 0, 24),
-		Position         = UDim2.new(1, -78, 0.5, -12),
+		BackgroundColor3 = Color3.fromRGB(40, 40, 55),
+		Size             = UDim2.new(0, 75, 0, 26),
+		Position         = UDim2.new(1, -89, 0.5, -13),
 		Text             = GetKeyName(comp.Key),
 		TextColor3       = Theme.Accent,
 		TextSize         = 12,
@@ -1350,20 +1620,25 @@ function SectionMethods:AddKeybind(config)
 		BorderSizePixel  = 0,
 		ZIndex           = 2,
 	})
-	New("UICorner", { Parent = keyBtn, CornerRadius = UDim.new(0, 4) })
+	New("UICorner", { Parent = keyBtn, CornerRadius = UDim.new(0, 6) })
+	New("UIStroke",  { Parent = keyBtn, Color = Theme.Border, Thickness = 1, Transparency = 0.5 })
 	comp.KeyLabel = keyBtn
 
 	keyBtn.MouseEnter:Connect(function()
-		if not comp.Listening then Tween(keyBtn, { BackgroundColor3 = Color3.fromRGB(50, 50, 50) }, 0.08) end
+		if not comp.Listening then 
+			SpringTween(keyBtn, { BackgroundColor3 = Color3.fromRGB(50, 50, 70) }, 200, 20)
+		end
 	end)
 	keyBtn.MouseLeave:Connect(function()
-		if not comp.Listening then Tween(keyBtn, { BackgroundColor3 = Color3.fromRGB(40, 40, 40) }, 0.1)  end
+		if not comp.Listening then 
+			Tween(keyBtn, { BackgroundColor3 = Color3.fromRGB(40, 40, 55) }, 0.1)
+		end
 	end)
 	keyBtn.MouseButton1Click:Connect(function()
 		comp.Listening    = true
 		keyBtn.Text       = "..."
 		keyBtn.TextColor3 = Theme.Warning
-		Tween(keyBtn, { BackgroundColor3 = Color3.fromRGB(60, 30, 30) }, 0.1)
+		SpringTween(keyBtn, { BackgroundColor3 = Color3.fromRGB(70, 40, 40) }, 200, 20)
 	end)
 
 	local kbConn = UserInputService.InputBegan:Connect(function(input, gameProcessed)
@@ -1372,7 +1647,7 @@ function SectionMethods:AddKeybind(config)
 			keyBtn.Text       = GetKeyName(input.KeyCode)
 			keyBtn.TextColor3 = Theme.Accent
 			comp.Listening    = false
-			Tween(keyBtn, { BackgroundColor3 = Color3.fromRGB(40, 40, 40) }, 0.1)
+			SpringTween(keyBtn, { BackgroundColor3 = Color3.fromRGB(40, 40, 55) }, 200, 20)
 			pcall(cb, input.KeyCode)
 		elseif not comp.Listening and not gameProcessed then
 			if input.KeyCode == comp.Key and comp.Key ~= Enum.KeyCode.Unknown then
